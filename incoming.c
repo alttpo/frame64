@@ -3,22 +3,35 @@
 #include <string.h>
 #include "incoming.h"
 
-struct frame_incoming *frame_incoming_init(struct frame_incoming *s) {
+struct frame_incoming *frame_incoming_init(
+    struct frame_incoming *s,
+    void *opaque,
+    frame_incoming_read_more read_more,
+    frame_incoming_received received
+) {
+    assert(s);
+    assert(read_more);
+    assert(received);
+
     memset(s, 0, sizeof(struct frame_incoming));
+    s->opaque = opaque;
+    s->read_more = read_more;
+    s->received = received;
+
     return s;
 }
 
-int frame_incoming_read(struct frame_incoming *s) {
+bool frame_incoming_read(struct frame_incoming *s) {
     // read available bytes:
     assert(s->read_more);
-    int n = s->read_more(s->rbuf + s->rt, 64 - s->rt);
-    if (n < 0) {
+    long n;
+    if (!s->read_more(s, s->rbuf + s->rt, 64 - s->rt, &n)) {
         // error:
-        return n;
+        return false;
     }
     if (n == 0) {
         // EOF?
-        return n;
+        return false;
     }
 
     s->rt += n;
@@ -38,14 +51,14 @@ int frame_incoming_read(struct frame_incoming *s) {
 
         if (s->rh + s->rl > s->rt) {
             // not enough data for frame:
-            return n;
+            return true;
         }
 
         // handle this current frame:
         uint8_t f = (s->rx >> 7) & 1;
         uint8_t c = (s->rx >> 6) & 1;
         assert(s->frame_received);
-        s->frame_received(c, f, s->rl, s->rbuf + s->rh);
+        s->received(s, s->rbuf + s->rh, s->rl, c, f);
 
         s->rf = false;
         s->rh += s->rl;
@@ -54,7 +67,7 @@ int frame_incoming_read(struct frame_incoming *s) {
             // buffer is empty:
             s->rh = 0;
             s->rt = 0;
-            return n;
+            return true;
         }
 
         // remaining bytes begin the next frame:
@@ -63,5 +76,5 @@ int frame_incoming_read(struct frame_incoming *s) {
         s->rh = 0;
     }
 
-    return n;
+    return true;
 }
