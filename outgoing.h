@@ -26,7 +26,7 @@ struct frame_outgoing *frame_outgoing_init(
 bool frame_outgoing_send(struct frame_outgoing *s, uint8_t chn, bool fin);
 
 static inline size_t frame_outgoing_len(struct frame_outgoing *s) {
-    return s->p - (s->buf + 1);;
+    return s->p - (s->buf + 1);
 }
 
 static inline bool frame_outgoing_append(struct frame_outgoing *s, uint8_t x) {

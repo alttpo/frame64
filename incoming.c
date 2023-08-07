@@ -57,7 +57,7 @@ bool frame_incoming_read(struct frame_incoming *s) {
         // handle this current frame:
         uint8_t f = (s->rx >> 7) & 1;
         uint8_t c = (s->rx >> 6) & 1;
-        assert(s->frame_received);
+        assert(s->received);
         s->received(s, s->rbuf + s->rh, s->rl, c, f);
 
         s->rf = false;

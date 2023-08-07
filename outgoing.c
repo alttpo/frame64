@@ -26,7 +26,7 @@ bool frame_outgoing_send(struct frame_outgoing *s, uint8_t chn, bool fin) {
 
     // compute length:
     size_t len = frame_outgoing_len(s);
-    assert(s->len <= 63);
+    assert(len <= 63);
 
     // compute header byte:
     s->buf[0] = ((fin & 1) << 7) | ((chn & 1) << 6) | (len & 63);
