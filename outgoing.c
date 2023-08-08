@@ -20,6 +20,13 @@ struct frame_outgoing *frame_outgoing_init(
     return s;
 }
 
+void frame_outgoing_reset(struct frame_outgoing *s) {
+    assert(s);
+
+    memset(s->buf, 0, 64);
+    s->p = &s->buf[1];
+}
+
 bool frame_outgoing_send(struct frame_outgoing *s, uint8_t chn, bool fin) {
     assert(s);
     assert(chn <= 1);

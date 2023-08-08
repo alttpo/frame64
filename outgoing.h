@@ -23,6 +23,8 @@ struct frame_outgoing *frame_outgoing_init(
     frame_outgoing_write_data_cb write_data
 );
 
+void frame_outgoing_reset(struct frame_outgoing *s);
+
 bool frame_outgoing_send(struct frame_outgoing *s, uint8_t chn, bool fin);
 
 static inline size_t frame_outgoing_len(struct frame_outgoing *s) {
