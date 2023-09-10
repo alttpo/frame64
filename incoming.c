@@ -1,41 +1,25 @@
 
 #include <assert.h>
 #include <string.h>
+
 #include "incoming.h"
 
-struct frame_incoming *frame_incoming_init(
-    struct frame_incoming *s,
+struct frame64rd *frame64rd_init(
+    struct frame64rd *s,
     void *opaque,
-    frame_incoming_read_more read_more,
-    frame_incoming_received received
+    frame64rd_received received
 ) {
     assert(s);
-    assert(read_more);
     assert(received);
 
-    memset(s, 0, sizeof(struct frame_incoming));
+    memset(s, 0, sizeof(struct frame64rd));
     s->opaque = opaque;
-    s->read_more = read_more;
     s->received = received;
 
     return s;
 }
 
-bool frame_incoming_read(struct frame_incoming *s) {
-    // read available bytes:
-    assert(s->read_more);
-    long n;
-    if (!s->read_more(s, s->rbuf + s->rt, 64 - s->rt, &n)) {
-        // error:
-        return false;
-    }
-    if (n == 0) {
-        // EOF?
-        return false;
-    }
-
-    s->rt += n;
-
+bool frame64rd_parse(struct frame64rd *s) {
     while (s->rh < s->rt) {
         if (!s->rf) {
             // [7654 3210]

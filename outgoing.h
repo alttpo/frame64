@@ -4,10 +4,11 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-struct frame_outgoing;
-typedef bool (*frame_outgoing_write_data_cb)(struct frame_outgoing *s, uint8_t *buf, size_t size, long *n);
+struct frame64wr;
 
-struct frame_outgoing {
+typedef bool (*frame64wr_write_cb)(struct frame64wr *s, uint8_t *buf, size_t size, long *n);
+
+struct frame64wr {
     uint8_t *p;
 
     uint8_t buf[64];
@@ -15,28 +16,28 @@ struct frame_outgoing {
     void *opaque;
 
 // required callbacks:
-    frame_outgoing_write_data_cb write_data;
+    frame64wr_write_cb write_data;
 };
 
-struct frame_outgoing *frame_outgoing_init(
-    struct frame_outgoing *s,
+struct frame64wr *frame64wr_init(
+    struct frame64wr *s,
     void *opaque,
-    frame_outgoing_write_data_cb write_data
+    frame64wr_write_cb write_data
 );
 
-void frame_outgoing_reset(struct frame_outgoing *s);
+void frame64wr_reset(struct frame64wr *s);
 
-bool frame_outgoing_send(struct frame_outgoing *s, uint8_t chn, bool fin);
+bool frame64wr_send(struct frame64wr *s, uint8_t chn, bool fin);
 
-static inline size_t frame_outgoing_len(struct frame_outgoing *s) {
+static inline size_t frame64wr_len(struct frame64wr *s) {
     return s->p - (s->buf + 1);
 }
 
-static inline bool frame_outgoing_append(struct frame_outgoing *s, uint8_t x) {
+static inline bool frame64wr_append(struct frame64wr *s, uint8_t x) {
     assert(s);
-    assert(frame_outgoing_len(s) <= 63);
+    assert(frame64wr_len(s) <= 63);
 
-    if (frame_outgoing_len(s) + 1 > 63) {
+    if (frame64wr_len(s) + 1 > 63) {
         return false;
     }
 
@@ -45,14 +46,14 @@ static inline bool frame_outgoing_append(struct frame_outgoing *s, uint8_t x) {
     return true;
 }
 
-static inline bool frame_outgoing_append_bytes(struct frame_outgoing *s, const uint8_t *buf, size_t len) {
+static inline bool frame64wr_append_bytes(struct frame64wr *s, const uint8_t *buf, size_t len) {
     assert(s);
     assert(buf);
     assert(len <= 63);
 
-    assert(frame_outgoing_len(s) <= 63);
+    assert(frame64wr_len(s) <= 63);
 
-    if (frame_outgoing_len(s) + len > 63) {
+    if (frame64wr_len(s) + len > 63) {
         return false;
     }
 
